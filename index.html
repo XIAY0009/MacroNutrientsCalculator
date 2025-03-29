@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Macronutrient Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Macronutrient Intake Calculator</h1>
+        <form id="macronutrient-form">
+            <label for="weight">Weight (kg):</label>
+            <input type="number" id="weight" required>
+
+            <label for="height">Height (cm):</label>
+            <input type="number" id="height" required>
+
+            <label for="age">Age (years):</label>
+            <input type="number" id="age" required>
+
+            <label for="gender">Gender:</label>
+            <select id="gender">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+            </select>
+
+            <label for="activity-level">Activity Level:</label>
+            <select id="activity-level">
+                <option value="1">Sedentary</option>
+                <option value="2">Lightly Active</option>
+                <option value="3" selected>Moderately Active</option>
+                <option value="4">Very Active</option>
+                <option value="5">Extra Active</option>
+            </select>
+
+            <label for="fat-mass">Fat Mass (%):</label>
+            <input type="number" id="fat-mass" step="0.1">
+
+            <label for="goal">Goal:</label>
+            <select id="goal">
+                <option value="muscle-gain">Muscle Gain</option>
+                <option value="weight-loss">Weight Loss</option>
+                <option value="maintenance">Weight Maintenance</option>
+            </select>
+
+            <button type="submit">Calculate</button>
+        </form>
+
+        <div id="results">
+            <h2>Results:</h2>
+            <p><strong>Protein:</strong> <span id="protein"></span> grams</p>
+            <p><strong>Fats:</strong> <span id="fats"></span> grams</p>
+            <p><strong>Carbohydrates:</strong> <span id="carbs"></span> grams</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
