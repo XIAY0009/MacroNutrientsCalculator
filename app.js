@@ -1,4 +1,4 @@
-document.getElementById('macronutrient-form').addEventListener('submit', function(event) {
+document.getElementById('macronutrientForm').addEventListener('submit', function(event) {
     event.preventDefault();
 
     // Get user inputs
@@ -6,9 +6,15 @@ document.getElementById('macronutrient-form').addEventListener('submit', functio
     const height = parseFloat(document.getElementById('height').value);
     const age = parseInt(document.getElementById('age').value);
     const gender = document.getElementById('gender').value;
-    const activityLevel = parseInt(document.getElementById('activity-level').value);
-    const fatMass = parseFloat(document.getElementById('fat-mass').value);
+    const activityLevel = parseInt(document.getElementById('activity').value);
+    const fatMass = parseFloat(document.getElementById('fatmass').value);
     const goal = document.getElementById('goal').value;
+
+    // Validate required fields
+    if (!weight || !height || !age || !gender || !activityLevel || !goal) {
+        alert('Please fill out all required fields.');
+        return; // Stop execution if validation fails
+    }
 
     // Step 1: Calculate BMR
     let bmr;
@@ -45,9 +51,11 @@ document.getElementById('macronutrient-form').addEventListener('submit', functio
     const carbsGrams = (adjustedTdee - (proteinGrams * 4 + fatsGrams * 9)) / 4;  // Carbs in grams
 
     // Display results
-    document.getElementById('protein').textContent = proteinGrams.toFixed(2);
-    document.getElementById('fats').textContent = fatsGrams.toFixed(2);
-    document.getElementById('carbs').textContent = carbsGrams.toFixed(2);
+    //document.getElementById('protein').textContent = proteinGrams.toFixed(2);
+    //document.getElementById('fats').textContent = fatsGrams.toFixed(2);
+    //document.getElementById('carbs').textContent = carbsGrams.toFixed(2);
 
-    document.getElementById('results').style.display = 'block';
+    //document.getElementById('results').style.display = 'block';
+
+    displayResults();
 });

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Macronutrient Intake Calculator</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: url('background-image.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .result-box {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            margin-left: 5px;
+            background-color: yellow;
+            color: black;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 300px;
+            background-color: #555;
+            color: #fff;
+            text-align: left;
+            padding: 10px;
+            border-radius: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -150px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        #other-goal {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Macronutrient Intake Calculator</h2>
+        <label>Weight (kg):</label>
+        <input type="number" id="weight" required>
+        <label>Height (cm):</label>
+        <input type="number" id="height" required>
+        <label>Age (years):</label>
+        <input type="number" id="age" required>
+        <label>Gender:</label>
+        <select id="gender">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+        </select>
+        <label>Activity Level:
+            <span class="tooltip">ℹ
+                <span class="tooltip-text">
+                    <strong>Activity Level Definitions:</strong><br>
+                    - Sedentary: Basic chores, no workouts<br>
+                    - Lightly Active: 30-45 min low-intensity cardio 2-3 times a week<br>
+                    - Moderately Active: Strength training + cardio 3-4 times a week<br>
+                    - Very Active: 10K-15K steps/day + strength training 5-6 times a week<br>
+                    - Extra Active: Professional athlete
+                </span>
+            </span>
+        </label>
+        <select id="activity">
+            <option value="0.2">Sedentary</option>
+            <option value="0.375">Lightly Active</option>
+            <option value="0.55">Moderately Active</option>
+            <option value="0.725">Very Active</option>
+            <option value="0.9">Extra Active</option>
+        </select>
+        <label>Fat Mass (%):</label>
+        <input type="number" id="fatmass">
+        <label>Goal:</label>
+        <select id="goal" onchange="toggleOtherGoal()">
+            <option value="muscle">Muscle Gain</option>
+            <option value="maintenance">Weight Maintenance</option>
+            <option value="loss">Weight Loss</option>
+            <option value="other">Other</option>
+        </select>
+        <input type="text" id="other-goal" placeholder="Specify your goal">
+        <button onclick="calculateMacros()">Calculate</button>
+        <div class="result-box" id="results"></div>
+    </div>
+    <script>
+        function toggleOtherGoal() {
+            let goal = document.getElementById('goal').value;
+            let otherGoalInput = document.getElementById('other-goal');
+            if (goal === 'other') {
+                otherGoalInput.style.display = 'block';
+            } else {
+                otherGoalInput.style.display = 'none';
+            }
+        }
+
+        function calculateMacros() {
+            let weight = parseFloat(document.getElementById('weight').value);
+            let height = parseFloat(document.getElementById('height').value);
+            let age = parseFloat(document.getElementById('age').value);
+            let gender = document.getElementById('gender').value;
+            let activity = parseFloat(document.getElementById('activity').value);
+            let fatMass = parseFloat(document.getElementById('fatmass').value) || 0;
+            let goal = document.getElementById('goal').value;
+            
+            let BMR;
+            if (fatMass === 0) {
+                BMR = gender === 'male' ? (10 * weight + 6.25 * height - 5 * age + 5) : (10 * weight + 6.25 * height - 5 * age - 161);
+            } else {
+                let BMR1 = gender === 'male' ? (10 * weight + 6.25 * height - 5 * age + 5) : (10 * weight + 6.25 * height - 5 * age - 161);
+                let BMR2 = (1 - (fatMass / 100)) * (weight * 2.20462) * 9.79 + 370;
+                let BMR3 = (1 - (fatMass / 100)) * weight * 22 + 500;
+                BMR = (BMR1 + BMR2 + BMR3) / 3;
+            }
+            
+            let TEF = 0.1 * BMR;
+            let TEA = BMR * activity;
+            let TDEE = BMR + TEF + TEA;
+            
+            if (goal === 'loss') TDEE *= 0.8;
+            
+            let protein = Math.round(Math.max(3 * weight, 0.4 * TDEE / 4));
+            let fats = Math.round(0.25 * TDEE / 9);
+            let carbs = Math.round((TDEE - (protein * 4 + fats * 9)) / 4);
+            
+            document.getElementById('results').innerHTML = 
+                `<strong>Results:</strong><br>
+                Calories: ${Math.round(TDEE)} kcal<br>
+                Protein: ${protein}g<br>
+                Fats: ${fats}g<br>
+                Carbs: ${carbs}g`;
+        }
+    </script>
+</body>
+</html>
+
