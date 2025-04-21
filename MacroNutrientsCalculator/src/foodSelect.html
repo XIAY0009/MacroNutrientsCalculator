@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hearty Main Meals</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: url('../images/webpageBackground.png') no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .food-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            margin: 20px auto;
+            max-width: 1200px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .food-item {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .food-item img {
+            width: 300px; /* Set a fixed width */
+            height: 300px; /* Set the height equal to the width */
+            object-fit: cover; /* Crop the image to fit the dimensions without distortion */
+            border-radius: 8px;
+            margin: 0 auto; /* Center the image horizontally */
+        }
+        .food-item h3 {
+            margin: 10px 0;
+            font-size: 18px; /* Adjust font size if needed */
+            max-width: 300px; /* Match the width of the image */
+            word-wrap: break-word; /* Ensure long words break to the next line */
+            text-align: center; /* Center the text */
+            margin-left: auto; /* Center horizontally */
+            margin-right: auto; /* Center horizontally */
+        }
+        .food-item p {
+            margin: 5px 0;
+            color: #555;
+        }
+        .food-item .nutrition {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #333;
+        }
+        .food-item button {
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .food-item button:hover {
+            background-color: #45a049;
+        }
+        h1 {
+            text-align: center;
+            color: #fff;
+            text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <h1>Hearty Main Meals</h1>
+    <div class="food-container">
+        <!-- Food Items -->
+        <div class="food-item">
+            <img src="../images/main_meals/yougurtChickenFriedRiceEgg.JPEG" alt="Food 1">
+            <h3>Golden Egg Fried "Rice" with Herb Zesty Chicken</h3>
+            <div class="nutrition">
+                <p>Calories: 414 cal</p>
+                <p>Carbs: 117 cal</p>
+                <p>Proteins: 211 cal</p>
+                <p>Fats: 86 cal</p>
+            </div>
+            <button>Add to Cart</button>
+        </div>
+        <div class="food-item">
+            <img src="../images/main_meals/basilPorkFriedRiceEgg.JPEG" alt="Food 2">
+            <h3>Fragrant Basil Pork over Fried "Rice" with Sunny Egg</h3>
+            <div class="nutrition">
+                <p>Calories: 417 cal</p>
+                <p>Carbs: 112 cal</p>
+                <p>Proteins: 173 cal</p>
+                <p>Fats: 132 cal</p>
+            </div>
+            <button>Add to Cart</button>
+        </div>
+        <div class="food-item">
+            <img src="../images/main_meals/chickenNuggets.JPEG" alt="Food 3">
+            <h3>Yoyo Spicy Nuggets</h3>
+            <div class="nutrition">
+                <p>Calories: 316 cal</p>
+                <p>Carbohydrates: 26 cal</p>
+                <p>Proteins: 186 cal</p>
+                <p>Fats: 90 cal</p>
+            </div>
+            <button>Add to Cart</button>
+        </div>
+        <div class="food-item">
+            <img src="../images/main_meals/zestyYuzuSeoulChickBowl.JPEG" alt="Food 4">
+            <h3>Zesty Yuzu Seoul Chick Bowl</h3>
+            <div class="nutrition">
+                <p>Calories: 373 cal</p>
+                <p>Carbohydrates: 126 cal</p>
+                <p>Proteins: 149 cal</p>
+                <p>Fats: 74 cal</p>
+            </div>
+            <button>Add to Cart</button>
+        </div>
+        <div class="food-item">
+            <img src="../images/main_meals/charredTenderChickenCashewBowl.JPEG" alt="Food 5">
+            <h3>Charred Tender Chicken Cashew Bowl</h3>
+            <div class="nutrition">
+                <p>Calories: 574 cal</p>
+                <p>Carbohydrates: 109 cal</p>
+                <p>Proteins: 262 cal</p>
+                <p>Fats: 171 cal</p>
+            </div>
+            <button>Add to Cart</button>
+        </div>
+        <div class="food-item">
+            <img src="../images/main_meals/Canton Pork Chop Over Cabbage-Carrot Nest.JPEG" alt="Food 6">
+            <h3>Canton Pork Chop Over Cabbage-Carrot Nest</h3>
+            <div class="nutrition">
+                <p>Calories: 638 cal</p>
+                <p>Carbohydrates: 99 cal</p>
+                <p>Proteins: 237 cal</p>
+                <p>Fats: 287 cal</p>
+            </div>
+            <button>Add to Cart</button>
+        </div>
+        <div class="food-item">
+            <img src="food7.jpg" alt="Food 7">
+            <h3>Chicken Wrap</h3>
+            <p>Grilled chicken wrapped in a soft tortilla with veggies.</p>
+            <div class="nutrition">
+                <p>Calories: 350</p>
+                <p>Proteins: 25g</p>
+                <p>Carbohydrates: 30g</p>
+                <p>Fats: 10g</p>
+            </div>
+            <button>Add to Cart</button>
+        </div>
+        <div class="food-item">
+            <img src="food8.jpg" alt="Food 8">
+            <h3>Fruit Smoothie</h3>
+            <p>A refreshing blend of fruits and yogurt.</p>
+            <div class="nutrition">
+                <p>Calories: 180</p>
+                <p>Proteins: 6g</p>
+                <p>Carbohydrates: 35g</p>
+                <p>Fats: 2g</p>
+            </div>
+            <button>Add to Cart</button>
+        </div>
+        <div class="food-item">
+            <img src="food9.jpg" alt="Food 9">
+            <h3>Grilled Salmon</h3>
+            <p>Perfectly grilled salmon with a side of vegetables.</p>
+            <div class="nutrition">
+                <p>Calories: 400</p>
+                <p>Proteins: 35g</p>
+                <p>Carbohydrates: 5g</p>
+                <p>Fats: 20g</p>
+            </div>
+            <button>Add to Cart</button>
+        </div>
+    </div>
+</body>
+</html>
