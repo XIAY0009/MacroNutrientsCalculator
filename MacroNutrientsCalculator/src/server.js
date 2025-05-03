@@ -126,6 +126,24 @@ app.post('/api/unlikeDish', (req, res) => {
     });
 });
 
+app.post('/api/addToCart', (req, res) => {
+    const { userId, dishName, quantity } = req.body;
+
+    // Validate input
+    if (!userId || !dishName || !quantity || quantity < 1) {
+        return res.status(400).send({ error: 'Invalid input. Please provide userId, dishName, and a valid quantity.' });
+    }
+
+    const query = 'INSERT INTO cart (user_id, dish_name, quantity) VALUES (?, ?, ?)';
+    db.query(query, [userId, dishName, quantity], (err, result) => {
+        if (err) {
+            console.error('Error adding to cart:', err);
+            return res.status(500).send({ error: 'Database error', details: err.message });
+        }
+        res.status(200).send({ cartId: result.insertId, message: 'Item added to cart successfully!' });
+    });
+});
+
 // Start the server
 app.listen(3000, () => {
     console.log('Server is running on http://localhost:3000');

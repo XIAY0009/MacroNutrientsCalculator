@@ -40,28 +40,37 @@ function toggleLikeDish(dishName, button) {
                 alert('An error occurred while updating your like status.');
             });
 }
-//function likeDish(dishName) {
-//    const userId = localStorage.getItem('userId'); // Retrieve the user's unique ID
-//    if (!userId) {
-//        alert('Please log in to like dishes.');
-//        return;
-//    }
-//
-//    fetch('http://localhost:3000/api/likeDish', {
-//        method: 'POST',
-//        headers: { 'Content-Type': 'application/json' },
-//        body: JSON.stringify({ userId, dishName })
-//    })
-//    .then(response => {
-//        if (response.ok) {
-//            alert(`You liked ${dishName}!`);
-//        } else {
-//            alert('Failed to like the dish. Please try again.');
-//        }
-//    })
-//    .catch(err => {
-//        console.error('Error liking dish:', err);
-//        alert('An error occurred while liking the dish.');
-//    });
-//}
- 
+
+function addToCart(dishName, button) {
+    const quantityInput = button.previousElementSibling; // Get the quantity input field
+    const quantity = parseInt(quantityInput.value, 10);
+
+    if (!quantity || quantity < 1) {
+        alert('Please enter a valid quantity.');
+        return;
+    }
+
+    const userId = localStorage.getItem('userId'); // Retrieve the user's unique ID
+    if (!userId) {
+        alert('Please log in to add items to your cart.');
+        return;
+    }
+
+    fetch('http://localhost:3000/api/addToCart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, dishName, quantity })
+    })
+    .then(response => {
+        if (response.ok) {
+            alert(`${quantity} x ${dishName} added to your cart!`);
+        } else {
+            alert('Failed to add the item to your cart. Please try again.');
+        }
+    })
+    .catch(err => {
+        console.error('Error adding to cart:', err);
+        alert('An error occurred while adding the item to your cart.');
+    });
+}
+

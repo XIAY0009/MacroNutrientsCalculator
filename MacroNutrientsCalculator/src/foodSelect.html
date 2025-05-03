@@ -25,6 +25,9 @@
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
         .food-item {
+            display: grid;
+            grid-template-rows: auto auto 1fr auto; /* Define rows for image, title, flexible space, and actions */
+            gap: 10px; /* Add spacing between rows */
             background-color: #fff;
             border: 1px solid #ddd;
             border-radius: 8px;
@@ -53,9 +56,10 @@
             color: #555;
         }
         .food-item .nutrition {
-            margin: 10px 0;
+            align-self: start; /* Align the nutrition section to the top of its grid cell */
             font-size: 14px;
             color: #333;
+            margin-top: auto; /* Push the nutrition section to the bottom of the flexible space */
         }
         .food-item button {
             background-color: #4CAF50;
@@ -77,6 +81,25 @@
             background-color: #ff0000; /* Red for "Unlike" */
         color: white;
         }
+        .quantity-input {
+            width: 60px;
+            height: 33px; /* Match the button height */
+            padding: 5px 10px; /* Adjust padding for better alignment */
+            margin: 10px 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 16px; /* Match the font size of the buttons */
+            box-sizing: border-box; /* Ensure padding doesn't affect the height */
+        }
+        /* Style the actions container */
+        .actions-container {
+            display: flex; /* Use Flexbox for alignment */
+            justify-content: center; /* Center the items horizontally */
+            align-items: center; /* Align items vertically */
+            gap: 10px; /* Add spacing between elements */
+            margin-top: 15px; /* Add some space above the container */
+        }
     </style>
 </head>
 <body>
@@ -93,8 +116,11 @@
                 <p>Proteins: 211 cal</p>
                 <p>Fats: 86 cal</p>
             </div>
-            <button>Add to Cart</button>
-            <button onclick="toggleLikeDish('Golden Egg Fried Rice', this)">Like</button>
+            <div class="actions-container">
+                <input type="number" class="quantity-input" placeholder="Quantity" min="1" value="1">
+                <button onclick="addToCart('Golden Egg Fried Rice', this)">Add to Cart</button>
+                <button onclick="toggleLikeDish('Golden Egg Fried Rice', this)">Like</button>
+            </div>
         </div>
         <div class="food-item">
             <img src="../images/main_meals/basilPorkFriedRiceEgg.JPEG" alt="Food 2">
@@ -105,96 +131,73 @@
                 <p>Proteins: 173 cal</p>
                 <p>Fats: 132 cal</p>
             </div>
-            <button>Add to Cart</button>
-            <button onclick="toggleLikeDish('Fragant Basil Pork', this)">Like</button>
+            <div class="actions-container">
+                <input type="number" class="quantity-input" placeholder="Quantity" min="1" value="1">
+                <button onclick="addToCart('Fragant Basil Pork', this)">Add to Cart</button>
+                <button onclick="toggleLikeDish('Fragant Basil Pork', this)">Like</button>
+            </div>    
         </div>
         <div class="food-item">
             <img src="../images/main_meals/chickenNuggets.JPEG" alt="Food 3">
             <h3>Yoyo Spicy Nuggets</h3>
             <div class="nutrition">
                 <p>Calories: 316 cal</p>
-                <p>Carbohydrates: 26 cal</p>
+                <p>Carbs: 26 cal</p>
                 <p>Proteins: 186 cal</p>
                 <p>Fats: 90 cal</p>
             </div>
-            <button>Add to Cart</button>
-            <button onclick="toggleLikeDish('Yoyo Spicy Nuggets', this)">Like</button>
+            <div class="actions-container">
+                <input type="number" class="quantity-input" placeholder="Quantity" min="1" value="1">
+                <button onclick="addToCart('Yoyo Spicy Nuggets', this)">Add to Cart</button>
+                <button onclick="toggleLikeDish('Yoyo Spicy Nuggets', this)">Like</button>
+            </div>    
         </div>
         <div class="food-item">
             <img src="../images/main_meals/zestyYuzuSeoulChickBowl.JPEG" alt="Food 4">
             <h3>Zesty Yuzu Seoul Chick Bowl</h3>
             <div class="nutrition">
                 <p>Calories: 373 cal</p>
-                <p>Carbohydrates: 126 cal</p>
+                <p>Carbs: 126 cal</p>
                 <p>Proteins: 149 cal</p>
                 <p>Fats: 74 cal</p>
             </div>
-            <button>Add to Cart</button>
-            <button onclick="toggleLikeDish('Zesty Yuzu Seoul Chick Bowl', this)">Like</button>
+            <div class="actions-container">
+                <input type="number" class="quantity-input" placeholder="Quantity" min="1" value="1">
+                <button onclick="addToCart('Zesty Yuzu Seoul Chick Bowl', this)">Add to Cart</button>
+                <button onclick="toggleLikeDish('Zesty Yuzu Seoul Chick Bowl', this)">Like</button>
+            </div>
         </div>
         <div class="food-item">
             <img src="../images/main_meals/charredTenderChickenCashewBowl.JPEG" alt="Food 5">
             <h3>Charred Tender Chicken Cashew Bowl</h3>
             <div class="nutrition">
                 <p>Calories: 574 cal</p>
-                <p>Carbohydrates: 109 cal</p>
+                <p>Carbs: 109 cal</p>
                 <p>Proteins: 262 cal</p>
                 <p>Fats: 171 cal</p>
             </div>
-            <button>Add to Cart</button>
-            <button onclick="toggleLikeDish('Charred Tender Chicken Cashew Bowl', this)">Like</button>
+            <div class="actions-container">
+                <input type="number" class="quantity-input" placeholder="Quantity" min="1" value="1">
+                <button onclick="addToCart('Charred Tender Chicken Cashew Bowl', this)">Add to Cart</button>
+                <button onclick="toggleLikeDish('Charred Tender Chicken Cashew Bowl', this)">Like</button>
+            </div>
         </div>
         <div class="food-item">
             <img src="../images/main_meals/Canton Pork Chop Over Cabbage-Carrot Nest.JPEG" alt="Food 6">
             <h3>Canton Pork Chop Over Cabbage-Carrot Nest</h3>
             <div class="nutrition">
                 <p>Calories: 638 cal</p>
-                <p>Carbohydrates: 99 cal</p>
+                <p>Carbs: 99 cal</p>
                 <p>Proteins: 237 cal</p>
                 <p>Fats: 287 cal</p>
             </div>
-            <button>Add to Cart</button>
-            <button onclick="toggleLikeDish('Canton Pork Chop', this)">Like</button>
-        </div>
-        <div class="food-item">
-            <img src="food7.jpg" alt="Food 7">
-            <h3>Chicken Wrap</h3>
-            <p>Grilled chicken wrapped in a soft tortilla with veggies.</p>
-            <div class="nutrition">
-                <p>Calories: 350</p>
-                <p>Proteins: 25g</p>
-                <p>Carbohydrates: 30g</p>
-                <p>Fats: 10g</p>
+            <div class="actions-container">
+                <input type="number" class="quantity-input" placeholder="Quantity" min="1" value="1">
+                <button onclick="addToCart('Canton Pork Chop', this)">Add to Cart</button>
+                <button onclick="toggleLikeDish('Canton Pork Chop', this)">Like</button>
             </div>
-            <button>Add to Cart</button>
-            <button onclick="likeDish('Chicken Wrap')">Like</button>
         </div>
-        <div class="food-item">
-            <img src="food8.jpg" alt="Food 8">
-            <h3>Fruit Smoothie</h3>
-            <p>A refreshing blend of fruits and yogurt.</p>
-            <div class="nutrition">
-                <p>Calories: 180</p>
-                <p>Proteins: 6g</p>
-                <p>Carbohydrates: 35g</p>
-                <p>Fats: 2g</p>
-            </div>
-            <button>Add to Cart</button>
-            <button onclick="likeDish('Fruit Smoothie')">Like</button>
-        </div>
-        <div class="food-item">
-            <img src="food9.jpg" alt="Food 9">
-            <h3>Grilled Salmon</h3>
-            <p>Perfectly grilled salmon with a side of vegetables.</p>
-            <div class="nutrition">
-                <p>Calories: 400</p>
-                <p>Proteins: 35g</p>
-                <p>Carbohydrates: 5g</p>
-                <p>Fats: 20g</p>
-            </div>
-            <button>Add to Cart</button>
-            <button onclick="likeDish('Grilled Salmon')">Like</button>
-        </div>
+        
     </div>
     <script>
         // Check if the user has entered their name and email
