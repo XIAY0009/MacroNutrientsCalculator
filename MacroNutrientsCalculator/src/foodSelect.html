@@ -68,15 +68,20 @@
         .food-item button:hover {
             background-color: #45a049;
         }
-        h1 {
+        h1,h2 {
             text-align: center;
             color: #fff;
             text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        button.liked {
+            background-color: #ff0000; /* Red for "Unlike" */
+        color: white;
         }
     </style>
 </head>
 <body>
     <h1>Hearty Main Meals</h1>
+    <h2>Please Choose Your Meal <span id="userName"></span>!</h2>
     <div class="food-container">
         <!-- Food Items -->
         <div class="food-item">
@@ -89,6 +94,7 @@
                 <p>Fats: 86 cal</p>
             </div>
             <button>Add to Cart</button>
+            <button onclick="toggleLikeDish('Golden Egg Fried Rice', this)">Like</button>
         </div>
         <div class="food-item">
             <img src="../images/main_meals/basilPorkFriedRiceEgg.JPEG" alt="Food 2">
@@ -100,6 +106,7 @@
                 <p>Fats: 132 cal</p>
             </div>
             <button>Add to Cart</button>
+            <button onclick="toggleLikeDish('Fragant Basil Pork', this)">Like</button>
         </div>
         <div class="food-item">
             <img src="../images/main_meals/chickenNuggets.JPEG" alt="Food 3">
@@ -111,6 +118,7 @@
                 <p>Fats: 90 cal</p>
             </div>
             <button>Add to Cart</button>
+            <button onclick="toggleLikeDish('Yoyo Spicy Nuggets', this)">Like</button>
         </div>
         <div class="food-item">
             <img src="../images/main_meals/zestyYuzuSeoulChickBowl.JPEG" alt="Food 4">
@@ -122,6 +130,7 @@
                 <p>Fats: 74 cal</p>
             </div>
             <button>Add to Cart</button>
+            <button onclick="toggleLikeDish('Zesty Yuzu Seoul Chick Bowl', this)">Like</button>
         </div>
         <div class="food-item">
             <img src="../images/main_meals/charredTenderChickenCashewBowl.JPEG" alt="Food 5">
@@ -133,6 +142,7 @@
                 <p>Fats: 171 cal</p>
             </div>
             <button>Add to Cart</button>
+            <button onclick="toggleLikeDish('Charred Tender Chicken Cashew Bowl', this)">Like</button>
         </div>
         <div class="food-item">
             <img src="../images/main_meals/Canton Pork Chop Over Cabbage-Carrot Nest.JPEG" alt="Food 6">
@@ -144,6 +154,7 @@
                 <p>Fats: 287 cal</p>
             </div>
             <button>Add to Cart</button>
+            <button onclick="toggleLikeDish('Canton Pork Chop', this)">Like</button>
         </div>
         <div class="food-item">
             <img src="food7.jpg" alt="Food 7">
@@ -156,6 +167,7 @@
                 <p>Fats: 10g</p>
             </div>
             <button>Add to Cart</button>
+            <button onclick="likeDish('Chicken Wrap')">Like</button>
         </div>
         <div class="food-item">
             <img src="food8.jpg" alt="Food 8">
@@ -168,6 +180,7 @@
                 <p>Fats: 2g</p>
             </div>
             <button>Add to Cart</button>
+            <button onclick="likeDish('Fruit Smoothie')">Like</button>
         </div>
         <div class="food-item">
             <img src="food9.jpg" alt="Food 9">
@@ -180,7 +193,20 @@
                 <p>Fats: 20g</p>
             </div>
             <button>Add to Cart</button>
+            <button onclick="likeDish('Grilled Salmon')">Like</button>
         </div>
     </div>
+    <script>
+        // Check if the user has entered their name and email
+        if (!localStorage.getItem('userName') || !localStorage.getItem('userEmail')) {
+            // Redirect to the landing page
+            window.location.href = 'landing.html';
+        }
+        else {
+        // Display the username in the <span> element
+        document.getElementById('userName').textContent = localStorage.getItem('userName');
+        }
+    </script>
+    <script src="foodSelect.js"></script>
 </body>
 </html>

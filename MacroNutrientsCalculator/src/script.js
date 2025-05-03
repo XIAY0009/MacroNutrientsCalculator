@@ -43,6 +43,31 @@ function calculateMacros() {
         Protein: ${protein.toFixed(0)}g<br>
         Fats: ${fats.toFixed(0)}g<br>
         Carbs: ${carbs.toFixed(0)}g`;
+
+    let userId = localStorage.getItem('userId');
+    fetch('http://localhost:3000/api/calculations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            userId,
+            weight,
+            height,
+            age,
+            gender,
+            activity_level: activity,
+            fat_mass: fatMass,
+            goal,
+            other_goal: goal === 'other' ? document.getElementById('other-goal').value : null,
+            protein: protein.toFixed(0),
+            carbohydrates: carbs.toFixed(0),
+            fats: fats.toFixed(0)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Calculation saved:', data);
+    })
+    .catch(err => alert('Error saving calculation data.'));
 }
 
 // Add event listener to the form
@@ -50,3 +75,4 @@ document.getElementById('macronutrientForm').addEventListener('submit', function
     event.preventDefault();
     calculateMacros();
 });
+

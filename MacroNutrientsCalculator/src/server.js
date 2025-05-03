@@ -4,16 +4,6 @@ const app = express();
 const mysql = require('mysql2');
 const bodyParser = require('body-parser');
 
-
-
-// Enable CORS for all routes
-//app.use(cors({
-//    origin: 'http://localhost:5500', // Replace with the origin of your frontend
-//    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-//    allowedHeaders: ['Content-Type', 'Authorization'],
-//    credentials: true
-//}));
-
 // Enable CORS for all origins
 app.use(cors());
 
@@ -61,6 +51,78 @@ app.post('/api/calculations', (req, res) => {
     db.query(query, [userId, weight, height, age, gender, activity_level, fat_mass, goal, other_goal, protein, carbohydrates, fats], (err, result) => {
         if (err) return res.status(500).send(err);
         res.status(200).send({ calculationId: result.insertId });
+    });
+});
+
+// Endpoint to save liked dishes
+app.post('/api/likeDish', (req, res) => {
+    const { userId, dishName } = req.body;
+
+    // Validate input
+    if (!userId || !dishName) {
+        return res.status(400).send({ error: 'Missing userId or dishName' });
+    }
+
+    // Check if the dish is already liked
+    const checkQuery = 'SELECT * FROM likes WHERE user_id = ? AND dish_name = ?';
+    db.query(checkQuery, [userId, dishName], (err, results) => {
+        if (err) {
+            console.error('Error checking like status:', err);
+            return res.status(500).send({ error: 'Database error', details: err.message });
+        }
+
+        if (results.length > 0) {
+            return res.status(400).send({ error: 'Dish is already liked.' });
+        }
+
+        // Add the like to the database
+        const query = 'INSERT INTO likes (user_id, dish_name) VALUES (?, ?)';
+        db.query(query, [userId, dishName], (err, result) => {
+            if (err) {
+                console.error('Error saving like:', err);
+                return res.status(500).send({ error: 'Database error', details: err.message });
+            }
+            res.status(200).send({ likeId: result.insertId, message: 'Dish liked successfully!' });
+        });
+    });
+});
+//app.post('/api/likeDish', (req, res) => {
+//    const { userId, dishName } = req.body;
+//
+//    // Validate input
+//    if (!userId || !dishName) {
+//        return res.status(400).send({ error: 'Missing userId or dishName' });
+//    }
+//
+//    const query = 'INSERT INTO likes (user_id, dish_name) VALUES (?, ?)';
+//    db.query(query, [userId, dishName], (err, result) => {
+//        if (err) {
+//            console.error('Error saving like:', err);
+//            return res.status(500).send({ error: 'Database error', details: err.message });
+//        }
+//        res.status(200).send({ likeId: result.insertId, message: 'Dish liked successfully!' });
+//    });
+//});
+
+app.post('/api/unlikeDish', (req, res) => {
+    const { userId, dishName } = req.body;
+
+    // Validate input
+    if (!userId || !dishName) {
+        return res.status(400).send({ error: 'Missing userId or dishName' });
+    }
+
+    // Remove the like from the database
+    const query = 'DELETE FROM likes WHERE user_id = ? AND dish_name = ?';
+    db.query(query, [userId, dishName], (err, result) => {
+        if (err) {
+            console.error('Error removing like:', err);
+            return res.status(500).send({ error: 'Database error', details: err.message });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).send({ error: 'Like not found.' });
+        }
+        res.status(200).send({ message: 'Dish unliked successfully!' });
     });
 });
 

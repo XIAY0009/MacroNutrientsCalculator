@@ -45,22 +45,6 @@
             <button type="button" onclick="validateForm()">Submit</button>
         </form>
     </div>
-    <script>
-        function validateForm() {
-            const name = document.getElementById('name').value.trim();
-            const email = document.getElementById('email').value.trim();
-
-            if (name && email) {
-                // Save the name and email in localStorage
-                localStorage.setItem('userName', name);
-                localStorage.setItem('userEmail', email);
-
-                // Redirect to the main page
-                window.location.href = 'index.html';
-            } else {
-                alert('Please fill out both fields.');
-            }
-        }
-    </script>
+    <script src="landing.js"></script> <!-- Include the external JavaScript file -->
 </body>
 </html>

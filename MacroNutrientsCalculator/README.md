@@ -34,6 +34,14 @@ MacroNutrientsCalculator
 - Click the "Calculate" button to see your macronutrient needs.
 - Results will be displayed in the result box below the form.
 
+## Checklist on Things to Improve On
+| Task                         | Status   | Notes                 | Priority | 
+|-----------------------------|----------|------------------------|----| 
+| Updates background in landing.html      | []      | To Do              |  2  | 
+| Center all the text in index.html | []      | To Do      |  2  | 
+| Create Main meal options           | []      | To Do      |  1  |
+| Shares Resting Metabolism Rate (RMR) results                 | []      | To Do  |  2  |
+
 ## Contributing
 Contributions are welcome! Please feel free to submit a pull request or open an issue for any suggestions or improvements.
 
