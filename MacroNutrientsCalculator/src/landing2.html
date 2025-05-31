@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background: url('../images/healthFood.jpg');
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;;
+        }
+        .form-container {
+            max-width: 500px;
+            width: 100%;
+            background:rgba(255, 255, 255, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+        input, button {
+            width: 95%;
+            box-sizing: border-box;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .toggle-btns {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .toggle-btns button {
+            width: 48%;
+            background: #2196F3;
+        }
+        .toggle-btns button.active {
+            background: #4CAF50;
+        }
+        #message {
+            color: red;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2> Welcome to Everything Counts</h2>
+        <h4>Remove the Guess Work, Achieve Your Goals</h4>
+        <div class="toggle-btns">
+            <button id="signInBtn" class="active" type="button" onclick="showForm('signIn')">Sign In</button>
+            <button id="registerBtn" type="button" onclick="showForm('register')">Register</button>
+        </div>
+        <form id="userForm" onsubmit="event.preventDefault(); validateForm();">
+            <input type="text" id="name" placeholder="Enter your name" required>
+            <input type="email" id="email" placeholder="Enter your email" required>
+            <button type="submit">Submit</button>
+        </form>
+        <div id="message"></div>
+    </div>
+
+
+<script src="landing2.js"></script> <!-- Include the external JavaScript file -->
+
+
+
+
+
