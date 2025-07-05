@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .cart-container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+        }
+        th {
+            background: #f9f9f9;
+        }
+        .empty {
+            text-align: center;
+            color: #888;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="cart-container">
+        <h1>Hearty Main Meals</h1>
+        <h2>Please Choose Your Meal <span id="userName"></span>!</h2>
+        <h1>Your Cart</h1>
+        <!--<h3>Your protein goals: <span id="proteinGoals"></span></h3>
+        <h3>Your carb goals: <span id="carbGoals"></span></h3>
+        <h3>Your fat goals: <span id="fatGoals"></span></h3>-->
+        <div id="cartContent">
+            <!-- Cart items will be loaded here -->
+        </div>
+    </div>
+    <script>
+        // Check if the user has entered their name and email
+        if (!localStorage.getItem('userName') || !localStorage.getItem('userEmail')) {
+            // Redirect to the landing page
+            window.location.href = 'landing.html';
+        }
+        else {
+        // Display the username in the <span> element
+        document.getElementById('userName').textContent = localStorage.getItem('userName');
+        }
+
+        fetch('http://localhost:3000/api/getUserId', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: localStorage.getItem('userName') })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Error fetching user ID:', data.error);
+                return;
+            }
+            localStorage.setItem('userId', data.userId);
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("I entered here");
+            const userId = localStorage.getItem('userId');
+            if (!userId) {
+                document.getElementById('cartContent').innerHTML = '<div class="empty">Please log in to view your cart.</div>';
+                return;
+            }
+
+            let targetCarb = 0;
+            let targetProtein = 0;
+            let targetFat = 0;
+
+            fetch(`http://localhost:3000/api/targets?userId=${userId}`)
+                .then(res => res.json())
+                .then(data => {
+                    console.log('API /api/targets response:', data);
+                    if (data.error) {
+                        console.error('Error fetching targets:', data.error);
+                        return;
+                    }
+                    // Display the user's daily targets
+                    //console.log('User daily targets:', data.protein);
+                    
+                    //document.getElementById('proteinGoals').innerHTML = data.protein;
+                    //document.getElementById('carbGoals').innerHTML = data.carbohydrates;
+                    //document.getElementById('fatGoals').innerHTML = data.fats;
+
+                    targetCarb = data.carbohydrates;
+                    targetProtein = data.protein;
+                    targetFat = data.fats;
+
+                    //document.getElementById('dailyTargets').innerHTML = `
+                    //    <h2>Your Daily Targets</h2>
+                    //    <p>Protein: ${data.protein}g</p>
+                    //    <p>Carbohydrates: ${data.carbohydrates}g</p>
+                    //    <p>Fats: ${data.fats}g</p>
+                    //`;
+                })
+                .catch(() => {
+                    console.log(document.getElementById('dailyTargets'));
+                    document.getElementById('dailyTargets').innerHTML = '<div class="empty">Failed to load daily targets.</div>';
+                });
+
+            fetch(`http://localhost:3000/api/cart?userId=${userId}`)
+                .then(res => res.json())
+                .then(data => {
+                    console.log('API /api/cart response:', data); // <-- This prints the response
+                    let html = '';
+                    // Cart section
+                    if (!data.cart.length) {
+                        html += '<div class="empty">Your cart is empty.</div>';
+                    } else {
+                        const dishNames = data.cart.map(item => item.dish_name);
+                        fetch('http://localhost:3000/api/dishes/nutrition', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ dishNames }) // dishNames: array of strings
+                        })
+                        .then(res => res.json())
+                        .then(nutritionArray => {
+                            // Transform array to object for quick lookup
+                            const nutritionData = {};
+                            nutritionArray.forEach(nutri => {
+                                nutritionData[nutri.name] = nutri;
+                            });
+
+                            let totalCarbs = 0, totalProteins = 0, totalFats = 0;
+                            let html = '<table><tr><th>Dish Name</th><th>Quantity</th><th>Carbs</th><th>Proteins</th><th>Fats</th></tr>';
+                            data.cart.forEach(item => {
+                                const nutri = nutritionData[item.dish_name] || {};
+                                const carbs = nutri.carbs !== undefined ? nutri.carbs : 0;
+                                const proteins = nutri.proteins !== undefined ? nutri.proteins : 0;
+                                const fats = nutri.fats !== undefined ? nutri.fats : 0;
+                                totalCarbs += carbs * item.quantity;
+                                totalProteins += proteins * item.quantity;
+                                totalFats += fats * item.quantity;
+                                html += `<tr>
+                                    <td>${item.dish_name}</td>
+                                    <td>${item.quantity}</td>
+                                    <td>${carbs}</td>
+                                    <td>${proteins}</td>
+                                    <td>${fats}</td>
+                                </tr>`;
+                            });
+                            // Add summary row for total calories from each macro
+                            html += `<tr style="font-weight:bold;background:#f9f9f9;"><td colspan="2">Total Calories</td><td>${totalCarbs}</td><td>${totalProteins}</td><td>${totalFats}</td></tr>`;
+                            
+                            // Calculate calories from targets (from goals shown above)
+                            //const proteinGoal = parseInt(document.getElementById('proteinGoals').textContent) || 0;
+                            //const carbGoal = parseInt(document.getElementById('carbGoals').textContent) || 0;
+                            //const fatGoal = parseInt(document.getElementById('fatGoals').textContent) || 0;
+                            const proteinGoal = parseInt(targetProtein) || 0;
+                            const carbGoal = parseInt(targetCarb) || 0;
+                            const fatGoal = parseInt(targetFat) || 0;
+
+                            // Add a row that shows the target calories from each macro
+                            html += `<tr style="font-weight:bold;background:#f9f9f9;"><td colspan="2">Target Calories</td><td>${carbGoal}</td><td>${proteinGoal}</td><td>${fatGoal}</td></tr>`;
+
+
+
+
+                            //const caloriesFromCarbsGoal = carbGoal * 4;
+                            //const caloriesFromProteinsGoal = proteinGoal * 4;
+                            //const caloriesFromFatsGoal = fatGoal * 9;
+
+                            // Calculate calories left for each macro
+                            //const caloriesFromCarbs = totalCarbs * 4;
+                            //const caloriesFromProteins = totalProteins * 4;
+                            //const caloriesFromFats = totalFats * 9;
+                            const leftCarbs = carbGoal - totalCarbs;
+                            const leftProteins = proteinGoal - totalProteins;
+                            const leftFats = fatGoal - totalFats;
+
+                            html += `<tr style="font-weight:bold;background:#e0f7fa;"><td colspan="2">Calories Left</td><td>${leftCarbs}</td><td>${leftProteins}</td><td>${leftFats}</td></tr>`;
+                            html += '</table>';
+
+                            // Likes section
+                            html += '<h2 style="margin-top:40px;">Liked Dishes</h2>';
+                            if (!data.likes.length) {
+                                html += '<div class="empty">You have not liked any dishes yet.</div>';
+                            } else {
+                                html += '<ul>';
+                                data.likes.forEach(dish => {
+                                    html += `<li>${dish}</li>`;
+                                });
+                                html += '</ul>';
+                            }
+                            document.getElementById('cartContent').innerHTML = html;
+                        }); // <-- closes .then(nutritionArray => {...})
+                    } // <-- closes else for cart.length
+                }) // <-- closes .then(data => {...}) for /api/cart
+                .catch(() => {
+                    document.getElementById('cartContent').innerHTML = '<div class="empty">Failed to load cart items.</div>';
+                });
+        }); // <-- closes DOMContentLoaded
+    </script>
+</body>
+</html>
