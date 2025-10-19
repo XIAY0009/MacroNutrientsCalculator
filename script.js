@@ -45,8 +45,48 @@ function calculateMacros() {
         Carbs: ${carbs.toFixed(0)}g`;
 }
 
-// Add event listener to the form
+// Save form data to the backend
+function saveFormDataToBackend(data) {
+    fetch('http://localhost:3000/saveFormData', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log('Form data saved to backend successfully.');
+        } else {
+            console.error('Error saving form data to backend.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+// Modify the form submission handler to send data to the backend
 document.getElementById('macronutrientForm').addEventListener('submit', function(event) {
     event.preventDefault();
+
+    const formData = {
+        weight: parseFloat(document.getElementById('weight').value),
+        height: parseFloat(document.getElementById('height').value),
+        age: parseFloat(document.getElementById('age').value),
+        gender: document.getElementById('gender').value,
+        activity: parseFloat(document.getElementById('activity').value),
+        fatMass: parseFloat(document.getElementById('fatmass').value) || 0,
+        goal: document.getElementById('goal').value,
+        otherGoal: document.getElementById('other-goal').value || null
+    };
+
+    // Validate required fields
+    if (!formData.weight || !formData.height || !formData.age || !formData.gender || !formData.activity || !formData.goal) {
+        alert('Please fill in all required fields.');
+        return;
+    }
+
+    saveFormDataToBackend(formData);
     calculateMacros();
 });

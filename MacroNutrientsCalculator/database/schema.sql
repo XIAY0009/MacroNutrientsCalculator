@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS cart (
     dish_name VARCHAR(255) NOT NULL,
     quantity INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_dish (user_id, dish_name)
 );
 

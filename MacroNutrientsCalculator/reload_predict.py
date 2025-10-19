@@ -35,6 +35,7 @@ user_id = loaded_dataset.mapping()[0][31]
 dish_ids = list(range(len(dishes)))
 
 scores = loaded_model.predict(user_id, dish_ids, item_features=item_features_matrix)
+print ("scores: ", scores)
 top_items = np.argsort(-scores)
 
 # Print recommendations

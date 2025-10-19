@@ -14,6 +14,11 @@
             margin: 0;
             padding: 0;
         }
+        h1,h2 {
+            text-align: center;
+            color: #fff;
+            text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
+        }
         .container {
             max-width: 600px;
             margin: 50px auto;
@@ -28,6 +33,7 @@
             margin: 10px 0;
             border: none;
             border-radius: 5px;
+            text-align: center;
         }
         button {
             background: #4CAF50;
@@ -82,10 +88,9 @@
         /* Updated Tab styles for top-right corner */
         .tabs {
             display: flex;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            margin: 0;
+            width: auto;
+            justify-content: flex-end; /* Align tabs to the right */
+            margin-bottom: 20px;
         }
         .tab {
             padding: 10px 20px;
@@ -93,8 +98,13 @@
             background-color: #f1f1f1;
             border: 1px solid #ccc;
             border-bottom: none;
-            margin-left: 5px;
-            border-radius: 5px 5px 0 0;
+            border-radius: 5px 5px 0 0; 
+            font-size: 16px;
+            transition: background 0.25s;
+            margin-left: 0;
+        }
+        .tab + .tab { 
+            margin-left: 5px; /* Remove left margin for the first tab */
         }
         .tab.active {
             background-color: white;
@@ -120,11 +130,13 @@
             window.location.href = 'landing.html';
         }
     </script>
+    <h1>Welcome, <span id="userName"></span>!</h1>
+    <h2>Discover Your Nutrition Goals</h2>
     <div class="container">
-        <h2>Welcome, <span id="userName"></span>!</h2>
         <div class="tabs">
-            <div class="tab active" onclick="showTab('calculator')">Macronutrient Calculator</div>
+            <div class="tab active" onclick="showTab('calculator')">Macro Calculator</div>
             <div class="tab" onclick="showTab('food-options')">Food Options</div>
+            <div class="tab" onclick="showTab('cart')">Cart</div>
         </div>
         <div id="calculator" class="tab-content active">
             <form id="macronutrientForm">
@@ -136,7 +148,7 @@
                 <input type="number" id="age" required>
                 <label>Gender:</label>
                 <select id="gender" required>
-                    <option value="" disabled selected>Select your gender</option>
+                    <option value="" disabled selected></option>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
                 </select>
@@ -153,7 +165,7 @@
                     </span>
                 </label>
                 <select id="activity" required>
-                    <option value="" disabled selected>Select your activity level</option>
+                    <option value="" disabled selected></option>
                     <option value="0.2">Sedentary</option>
                     <option value="0.375">Lightly Active</option>
                     <option value="0.55">Moderately Active</option>
@@ -164,7 +176,7 @@
                 <input type="number" id="fatmass">
                 <label>Goal:</label>
                 <select id="goal" onchange="toggleOtherGoal()" required>
-                    <option value="" disabled selected>Select your goal</option>
+                    <option value="" disabled selected></option>
                     <option value="muscle">Muscle Gain</option>
                     <option value="maintenance">Weight Maintenance</option>
                     <option value="loss">Weight Loss</option>
@@ -190,9 +202,33 @@
     <script>
         // Display the logged-in user's name
         document.getElementById('userName').textContent = localStorage.getItem('userName');
+        
+        fetch('http://localhost:3000/api/getUserId', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: localStorage.getItem('userName') })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Error fetching user ID:', data.error);
+                return;
+            }
+            localStorage.setItem('userId', data.userId);
+        });
 
         // Tab switching logic
         function showTab(tabId) {
+            if (tabId === 'food-options') {
+                window.location.href = 'foodSelect.html';
+                return;
+            }
+            if (tabId === 'cart') {
+                window.location.href = 'cart.html';
+                return;
+            }
             const tabs = document.querySelectorAll('.tab');
             const contents = document.querySelectorAll('.tab-content');
             tabs.forEach(tab => tab.classList.remove('active'));

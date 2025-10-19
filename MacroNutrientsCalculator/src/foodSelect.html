@@ -100,14 +100,56 @@
             gap: 10px; /* Add spacing between elements */
             margin-top: 15px; /* Add some space above the container */
         }
+        /* Updated Tab styles for top-right corner */
+        .tabs {
+            display: flex;
+            width: auto;
+            justify-content: flex-end; /* Align tabs to the right */
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0; 
+            font-size: 16px;
+            transition: background 0.25s;
+            margin-left: 0;
+        }
+        .tab + .tab { 
+            margin-left: 5px; /* Remove left margin for the first tab */
+        }
+        .tab.active {
+            background-color: white;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 0 0 5px 5px;
+            background-color: white;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
     </style>
 </head>
 <body>
     <h1>Hearty Main Meals</h1>
     <h2>Please Choose Your Meal <span id="userName"></span>!</h2>
+        <div class="tabs">
+            <div class="tab" onclick="showTab('calculator')">Macro Calculator</div>
+            <div class="tab active" onclick="showTab('food-options')">Food Options</div>
+            <div class="tab" onclick="showTab('cart')">Cart</div>
+        </div>
+
     <div class="food-container">
         <!-- Food Items -->
-        <div class="food-item">
+        <div class="food-item" class="tab-content active">
             <img src="../images/main_meals/yougurtChickenFriedRiceEgg.JPEG" alt="Food 1">
             <h3>Golden Egg Fried "Rice" with Herb Zesty Chicken</h3>
             <div class="nutrition">
@@ -193,8 +235,8 @@
             </div>
             <div class="actions-container">
                 <input type="number" class="quantity-input" placeholder="Quantity" min="1" value="1">
-                <button onclick="addToCart('Canton Pork Chop', this)">Add to Cart</button>
-                <button onclick="toggleLikeDish('Canton Pork Chop', this)">Like</button>
+                <button onclick="addToCart('Canton Pork Chop Over Cabbage-Carrot Nest', this)">Add to Cart</button>
+                <button onclick="toggleLikeDish('Canton Pork Chopi Over Cabbage-Carrot Nest', this)">Like</button>
             </div>
         </div>
         
@@ -209,6 +251,44 @@
         // Display the username in the <span> element
         document.getElementById('userName').textContent = localStorage.getItem('userName');
         }
+
+        fetch('http://localhost:3000/api/getUserId', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: localStorage.getItem('userName') })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Error fetching user ID:', data.error);
+                return;
+            }
+            localStorage.setItem('userId', data.userId);
+        });
+
+
+        
+	// Tab switching logic
+        function showTab(tabId) {
+            if (tabId === 'calculator') {
+                window.location.href = 'index.html';
+                return;
+            }
+            if (tabId === 'cart') {
+                window.location.href = 'cart.html';
+                return;
+            }
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+
     </script>
     <script src="foodSelect.js"></script>
 </body>

@@ -7,216 +7,288 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background: #f4f4f4;
+            background: url('../images/webpageBackground.png') no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
             margin: 0;
             padding: 0;
-        }
-        .cart-container {
-            max-width: 800px;
-            margin: 40px auto;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            padding: 30px;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            padding: 12px 8px;
-            border-bottom: 1px solid #eee;
             text-align: left;
         }
-        th {
-            background: #f9f9f9;
+    .cart-container { max-width: 800px; margin: 12px auto 40px auto; background: rgba(255,255,255,0.9); border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); padding: 30px; }
+        h1 { text-align: center; color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px 8px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #f9f9f9; }
+        .empty { text-align: center; color: #555; margin-top: 40px; }
+
+        /* Tabs (shared style with other pages) */
+        .tabs {
+            display: flex;
+            width: auto;
+            justify-content: flex-end;
+            /* Match the main container width and align with it */
+            margin: 8px auto 0 auto; /* sit closer to the main window */
+            max-width: 800px; /* same as .cart-container */
+            padding-right: 0;
         }
-        .empty {
-            text-align: center;
-            color: #888;
-            margin-top: 40px;
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            font-size: 16px;
+            transition: background 0.25s;
+            margin-left: 5px;
+        }
+        .tab.active {
+            background-color: white;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div class="cart-container">
-        <h1>Hearty Main Meals</h1>
-        <h2>Please Choose Your Meal <span id="userName"></span>!</h2>
-        <h1>Your Cart</h1>
-        <!--<h3>Your protein goals: <span id="proteinGoals"></span></h3>
-        <h3>Your carb goals: <span id="carbGoals"></span></h3>
-        <h3>Your fat goals: <span id="fatGoals"></span></h3>-->
-        <div id="cartContent">
-            <!-- Cart items will be loaded here -->
-        </div>
+    <div class="tabs">
+        <div class="tab" onclick="showTab('calculator')">Macro Calculator</div>
+        <div class="tab" onclick="showTab('food-options')">Food Options</div>
+        <div class="tab active" onclick="showTab('cart')">Cart</div>
     </div>
+
+    <div class="cart-container">
+        <h1>Welcome to Your Cart <span id="userName"></span></h1>
+        <div id="cartContent"><!-- Cart items will be loaded here --></div>
+    </div>
+
     <script>
-        // Check if the user has entered their name and email
+        // Auto-run optimization on load and reload page after quantity updates (original behavior)
         if (!localStorage.getItem('userName') || !localStorage.getItem('userEmail')) {
-            // Redirect to the landing page
             window.location.href = 'landing.html';
-        }
-        else {
-        // Display the username in the <span> element
-        document.getElementById('userName').textContent = localStorage.getItem('userName');
+        } else {
+            document.getElementById('userName').textContent = localStorage.getItem('userName');
         }
 
-        fetch('http://localhost:3000/api/getUserId', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name: localStorage.getItem('userName') })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.error) {
-                console.error('Error fetching user ID:', data.error);
+        // ensure userId
+        fetch('http://localhost:3000/api/getUserId', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: localStorage.getItem('userName') }) })
+            .then(r => r.json()).then(d => { if (d && d.userId) localStorage.setItem('userId', d.userId); }).catch(() => {});
+
+        // Tab navigation helper (consistent with other pages)
+        function showTab(tabId) {
+            if (tabId === 'calculator') {
+                window.location.href = 'index.html';
                 return;
             }
-            localStorage.setItem('userId', data.userId);
-        });
+            if (tabId === 'food-options') {
+                window.location.href = 'foodSelect.html';
+                return;
+            }
+            if (tabId === 'cart') {
+                // already on cart page
+                return;
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
-            console.log("I entered here");
+            const deviationRange = 50;
             const userId = localStorage.getItem('userId');
-            if (!userId) {
-                document.getElementById('cartContent').innerHTML = '<div class="empty">Please log in to view your cart.</div>';
-                return;
-            }
+            if (!userId) { document.getElementById('cartContent').innerHTML = '<div class="empty">Please log in to view your cart.</div>'; return; }
 
-            let targetCarb = 0;
-            let targetProtein = 0;
-            let targetFat = 0;
+            let targetCarb = 0, targetProtein = 0, targetFat = 0;
 
-            fetch(`http://localhost:3000/api/targets?userId=${userId}`)
-                .then(res => res.json())
-                .then(data => {
-                    console.log('API /api/targets response:', data);
-                    if (data.error) {
-                        console.error('Error fetching targets:', data.error);
-                        return;
-                    }
-                    // Display the user's daily targets
-                    //console.log('User daily targets:', data.protein);
-                    
-                    //document.getElementById('proteinGoals').innerHTML = data.protein;
-                    //document.getElementById('carbGoals').innerHTML = data.carbohydrates;
-                    //document.getElementById('fatGoals').innerHTML = data.fats;
+            fetch(`http://localhost:3000/api/targets?userId=${userId}`).then(r => r.json()).then(t => { if (t && !t.error) { targetCarb = t.carbohydrates || 0; targetProtein = t.protein || 0; targetFat = t.fats || 0; }}).catch(() => {});
 
-                    targetCarb = data.carbohydrates;
-                    targetProtein = data.protein;
-                    targetFat = data.fats;
+            // load cart and render
+            fetch(`http://localhost:3000/api/cart?userId=${userId}`).then(r => r.json()).then(data => {
+                if (!data || !data.cart || !data.cart.length) { document.getElementById('cartContent').innerHTML = '<div class="empty">Your cart is empty.</div>'; return; }
 
-                    //document.getElementById('dailyTargets').innerHTML = `
-                    //    <h2>Your Daily Targets</h2>
-                    //    <p>Protein: ${data.protein}g</p>
-                    //    <p>Carbohydrates: ${data.carbohydrates}g</p>
-                    //    <p>Fats: ${data.fats}g</p>
-                    //`;
-                })
-                .catch(() => {
-                    console.log(document.getElementById('dailyTargets'));
-                    document.getElementById('dailyTargets').innerHTML = '<div class="empty">Failed to load daily targets.</div>';
-                });
+                // Expand dish names according to quantity so optimizer sees duplicates
+                const dishNames = data.cart.flatMap(i => Array(Number(i.quantity || 1)).fill(i.dish_name));
+                console.log("dishNames are: ", dishNames);
+                fetch('http://localhost:3000/api/dishes/nutrition', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dishNames }) })
+                    .then(r => r.json()).then(nutritionArray => {
+                        const nutritionData = {};
+                        (nutritionArray || []).forEach(n => { nutritionData[n.name] = n; });
 
-            fetch(`http://localhost:3000/api/cart?userId=${userId}`)
-                .then(res => res.json())
-                .then(data => {
-                    console.log('API /api/cart response:', data); // <-- This prints the response
-                    let html = '';
-                    // Cart section
-                    if (!data.cart.length) {
-                        html += '<div class="empty">Your cart is empty.</div>';
-                    } else {
-                        const dishNames = data.cart.map(item => item.dish_name);
-                        fetch('http://localhost:3000/api/dishes/nutrition', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ dishNames }) // dishNames: array of strings
-                        })
-                        .then(res => res.json())
-                        .then(nutritionArray => {
-                            // Transform array to object for quick lookup
-                            const nutritionData = {};
-                            nutritionArray.forEach(nutri => {
-                                nutritionData[nutri.name] = nutri;
-                            });
+                        let totalCarbs = 0, totalProteins = 0, totalFats = 0;
+                        const cartQuantities = {};
+                        let html = '<table><tr><th>Dish Name</th><th>Quantity</th><th>Carbs</th><th>Proteins</th><th>Fats</th><th>In Cart</th><th>Recom</th></tr>';
 
-                            let totalCarbs = 0, totalProteins = 0, totalFats = 0;
-                            let html = '<table><tr><th>Dish Name</th><th>Quantity</th><th>Carbs</th><th>Proteins</th><th>Fats</th></tr>';
-                            data.cart.forEach(item => {
-                                const nutri = nutritionData[item.dish_name] || {};
-                                const carbs = nutri.carbs !== undefined ? nutri.carbs : 0;
-                                const proteins = nutri.proteins !== undefined ? nutri.proteins : 0;
-                                const fats = nutri.fats !== undefined ? nutri.fats : 0;
-                                totalCarbs += carbs * item.quantity;
-                                totalProteins += proteins * item.quantity;
-                                totalFats += fats * item.quantity;
-                                html += `<tr>
-                                    <td>${item.dish_name}</td>
-                                    <td>${item.quantity}</td>
-                                    <td>${carbs}</td>
-                                    <td>${proteins}</td>
-                                    <td>${fats}</td>
-                                </tr>`;
-                            });
-                            // Add summary row for total calories from each macro
-                            html += `<tr style="font-weight:bold;background:#f9f9f9;"><td colspan="2">Total Calories</td><td>${totalCarbs}</td><td>${totalProteins}</td><td>${totalFats}</td></tr>`;
-                            
-                            // Calculate calories from targets (from goals shown above)
-                            //const proteinGoal = parseInt(document.getElementById('proteinGoals').textContent) || 0;
-                            //const carbGoal = parseInt(document.getElementById('carbGoals').textContent) || 0;
-                            //const fatGoal = parseInt(document.getElementById('fatGoals').textContent) || 0;
-                            const proteinGoal = parseInt(targetProtein) || 0;
-                            const carbGoal = parseInt(targetCarb) || 0;
-                            const fatGoal = parseInt(targetFat) || 0;
+                        data.cart.forEach(item => {
+                            const nutri = nutritionData[item.dish_name] || {};
+                            const carbs = Number(nutri.carbs || 0);
+                            const proteins = Number(nutri.proteins || 0);
+                            const fats = Number(nutri.fats || 0);
+                            totalCarbs += carbs * item.quantity;
+                            totalProteins += proteins * item.quantity;
+                            totalFats += fats * item.quantity;
+                            cartQuantities[item.dish_name] = item.quantity;
 
-                            // Add a row that shows the target calories from each macro
-                            html += `<tr style="font-weight:bold;background:#f9f9f9;"><td colspan="2">Target Calories</td><td>${carbGoal}</td><td>${proteinGoal}</td><td>${fatGoal}</td></tr>`;
+                            html += `<tr data-dish="${item.dish_name}">`;
+                            html += `<td>${item.dish_name}</td>`;
+                            html += `<td class="qty-cell">${item.quantity}</td>`;
+                            html += `<td>${carbs}</td><td>${proteins}</td><td>${fats}</td>`;
+                            html += `<td style="text-align:center;"><button class="qty-decrease" data-dish="${item.dish_name}" style="margin-right:6px;">-</button><span class="qty-value">${item.quantity}</span><button class="qty-increase" data-dish="${item.dish_name}" style="margin-left:6px;">+</button></td>`;
+                            html += `<td></td></tr>`;
+                        });
 
+                        html += `<tr style="font-weight:bold;background:#f9f9f9;"><td colspan="2">Total Calories</td><td>${totalCarbs}</td><td>${totalProteins}</td><td>${totalFats}</td><td></td><td></td></tr>`;
 
+                        const carbGoal = parseInt(targetCarb) || 0;
+                        const proteinGoal = parseInt(targetProtein) || 0;
+                        const fatGoal = parseInt(targetFat) || 0;
+                        html += `<tr style="font-weight:bold;background:#f9f9f9;"><td colspan="2">Target Calories</td><td>${carbGoal}</td><td>${proteinGoal}</td><td>${fatGoal}</td><td></td><td></td></tr>`;
 
+                        const leftCarbs = carbGoal - totalCarbs;
+                        const leftProteins = proteinGoal - totalProteins;
+                        const leftFats = fatGoal - totalFats;
+                        const leftCarbColor = (leftCarbs > -deviationRange && leftCarbs < deviationRange) ? 'color:green' : 'color:orange';
+                        const leftProteinColor = (leftProteins > -deviationRange && leftProteins < deviationRange) ? 'color:green' : 'color:orange';
+                        const leftFatColor = (leftFats > -deviationRange && leftFats < deviationRange) ? 'color:green' : 'color:orange';
+                        html += `<tr style="font-weight:bold;background:#e0f7fa;"><td colspan="2">Calories Left</td><td style="${leftCarbColor}">${leftCarbs}</td><td style="${leftProteinColor}">${leftProteins}</td><td style="${leftFatColor}">${leftFats}</td><td></td><td></td></tr>`;
 
-                            //const caloriesFromCarbsGoal = carbGoal * 4;
-                            //const caloriesFromProteinsGoal = proteinGoal * 4;
-                            //const caloriesFromFatsGoal = fatGoal * 9;
+                        html += '<h2 style="margin-top:40px;">Liked Dishes</h2>';
+                        if (!data.likes || !data.likes.length) html += '<div class="empty">You have not liked any dishes yet.</div>';
+                        else { html += '<ul>'; data.likes.forEach(d => html += `<li>${d}</li>`); html += '</ul>'; }
 
-                            // Calculate calories left for each macro
-                            //const caloriesFromCarbs = totalCarbs * 4;
-                            //const caloriesFromProteins = totalProteins * 4;
-                            //const caloriesFromFats = totalFats * 9;
-                            const leftCarbs = carbGoal - totalCarbs;
-                            const leftProteins = proteinGoal - totalProteins;
-                            const leftFats = fatGoal - totalFats;
+                        document.getElementById('cartContent').innerHTML = html;
 
-                            html += `<tr style="font-weight:bold;background:#e0f7fa;"><td colspan="2">Calories Left</td><td>${leftCarbs}</td><td>${leftProteins}</td><td>${leftFats}</td></tr>`;
-                            html += '</table>';
+                        function updateCartQuantity(userId, dishName, newQty) {
+                            fetch('http://localhost:3000/api/cart/update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId, dishName, quantity: newQty }) })
+                                .then(r => r.json()).then(res => { if (res && res.success) window.location.reload(); }).catch(err => console.error('Error updating cart:', err));
+                        }
 
-                            // Likes section
-                            html += '<h2 style="margin-top:40px;">Liked Dishes</h2>';
-                            if (!data.likes.length) {
-                                html += '<div class="empty">You have not liked any dishes yet.</div>';
-                            } else {
-                                html += '<ul>';
-                                data.likes.forEach(dish => {
-                                    html += `<li>${dish}</li>`;
-                                });
-                                html += '</ul>';
+                        document.getElementById('cartContent').addEventListener('click', function(e) {
+                            const t = e.target;
+                            if (t.classList.contains('qty-increase') || t.classList.contains('qty-decrease')) {
+                                const dish = t.getAttribute('data-dish');
+                                // Use the clicked button's row to decide behavior (main cart row vs optimized row)
+                                const row = t.closest('tr');
+                                if (!row) return;
+
+                                // If this is an optimized row it has a .recommended-qty-cell and .in-cart-value
+                                const inCartElem = row.querySelector('.in-cart-value');
+                                const recommendedElem = row.querySelector('.recommended-qty-cell');
+
+                                if (inCartElem) {
+                                    // Optimized row: adjust the actual in-cart quantity and update server
+                                    let current = Number(inCartElem.textContent) || 0;
+                                    if (t.classList.contains('qty-increase')) current += 1;
+                                    if (t.classList.contains('qty-decrease')) current = Math.max(0, current - 1);
+
+                                    // Update displayed in-cart quantity immediately for responsiveness
+                                    inCartElem.textContent = current;
+
+                                    // Also update main cart row display if present
+                                    const mainRow = document.querySelector(`tr[data-dish="${dish}"]`);
+                                    if (mainRow && mainRow !== row) {
+                                        const mainQtySpan = mainRow.querySelector('.qty-value');
+                                        const mainQtyCell = mainRow.querySelector('.qty-cell');
+                                        if (mainQtySpan) mainQtySpan.textContent = current;
+                                        if (mainQtyCell) mainQtyCell.textContent = current;
+                                    }
+
+                                    // Call server to persist the new quantity
+                                    updateCartQuantity(userId, dish, current);
+                                } else {
+                                    // Main cart row: existing behavior
+                                    const qtySpan = row.querySelector('.qty-value');
+                                    let current = Number(qtySpan ? qtySpan.textContent : row.querySelector('.qty-cell').textContent) || 0;
+                                    if (t.classList.contains('qty-increase')) current += 1;
+                                    if (t.classList.contains('qty-decrease')) current = Math.max(0, current - 1);
+
+                                    if (current === 0) {
+                                        row.remove();
+                                    } else {
+                                        const qtySpanElem = row.querySelector('.qty-value');
+                                        const qtyCellElem = row.querySelector('.qty-cell');
+                                        if (qtySpanElem) qtySpanElem.textContent = current;
+                                        if (qtyCellElem) qtyCellElem.textContent = current;
+                                    }
+
+                                    updateCartQuantity(userId, dish, current);
+                                }
                             }
-                            document.getElementById('cartContent').innerHTML = html;
-                        }); // <-- closes .then(nutritionArray => {...})
-                    } // <-- closes else for cart.length
-                }) // <-- closes .then(data => {...}) for /api/cart
-                .catch(() => {
-                    document.getElementById('cartContent').innerHTML = '<div class="empty">Failed to load cart items.</div>';
-                });
-        }); // <-- closes DOMContentLoaded
+                        });
+
+                        // original auto optimization behavior
+                        fetch('http://localhost:3000/api/optimize-dishes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: userId, targetCarb, targetProtein, targetFat, cartItems: dishNames, likedItems: data.likes || [] }) })
+                            .then(r => r.json())
+                            .then(optRes => {
+                                const optimizedDishNames = Object.values(optRes || {}).flatMap(v => String(v || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean));
+                                if (!optimizedDishNames.length) return;
+
+                                fetch('http://localhost:3000/api/dishes/nutrition', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dishNames: optimizedDishNames }) })
+                                    .then(r => r.json())
+                                    .then(optNutrition => {
+                                        const nutMap = {};
+                                        (optNutrition || []).forEach(n => nutMap[n.name] = n);
+                                        const table = document.querySelector('.cart-container table');
+                                        if (!table) return;
+
+                                        // Count occurrences in optimizedDishNames to get recommended quantities
+                                        const optCounts = optimizedDishNames.reduce((acc, n) => { acc[n] = (acc[n] || 0) + 1; return acc; }, {});
+                                        let optTotalCarbs = 0, optTotalProteins = 0, optTotalFats = 0;
+                                        Object.keys(optCounts).forEach(name => {
+                                            const qty = optCounts[name] || 0;
+                                            const nut = nutMap[name] || {};
+                                            const carbs = Number(nut.carbs || 0);
+                                            const proteins = Number(nut.proteins || 0);
+                                            const fats = Number(nut.fats || 0);
+                                            optTotalCarbs += carbs * qty;
+                                            optTotalProteins += proteins * qty;
+                                            optTotalFats += fats * qty;
+                                            const tr = document.createElement('tr');
+                                            tr.style.fontWeight = 'bold'; tr.style.background = '#e0ffe0'; tr.setAttribute('data-dish', name);
+                                            const currentQty = Number(cartQuantities[name]) || 0;
+                                            // Quantity column = recommended qty, In Cart column = current cart qty
+                                            tr.innerHTML = `<td>${name}</td><td class="recommended-qty-cell">${qty}</td><td>${carbs}</td><td>${proteins}</td><td>${fats}</td><td style="text-align:center;"><button class="qty-decrease" data-dish="${name}" style="margin-right:6px;">-</button><span class="in-cart-value">${currentQty}</span><button class="qty-increase" data-dish="${name}" style="margin-left:6px;">+</button></td><td style="text-align:center;">✓</td>`;
+                                            table.appendChild(tr);
+                                        });
+                                        const totalsRow = document.createElement('tr'); totalsRow.style.fontWeight = 'bold'; totalsRow.style.background = '#dfffe0'; totalsRow.innerHTML = `<td colspan="2">Optimized Dishes Total</td><td>${optTotalCarbs}</td><td>${optTotalProteins}</td><td>${optTotalFats}</td><td></td><td></td>`; table.appendChild(totalsRow);
+
+                                        const carbGoalCalories = (Number(targetCarb) || 0);
+                                        const proteinGoalCalories = (Number(targetProtein) || 0);
+                                        const fatGoalCalories = (Number(targetFat) || 0);
+                                        const optCarbCalories = optTotalCarbs;
+                                        const optProteinCalories = optTotalProteins;
+                                        const optFatCalories = optTotalFats;
+                                        const leftCarbCalories = carbGoalCalories - optCarbCalories;
+                                        const leftProteinCalories = proteinGoalCalories - optProteinCalories;
+                                        const leftFatCalories = fatGoalCalories - optFatCalories;
+                                        const leftCarbColor = (Math.abs(leftCarbCalories) < deviationRange) ? 'color:green' : 'color:orange';
+                                        const leftProteinColor = (Math.abs(leftProteinCalories) < deviationRange) ? 'color:green' : 'color:orange';
+                                        const leftFatColor = (Math.abs(leftFatCalories) < deviationRange) ? 'color:green' : 'color:orange';
+                                        const caloriesLeftRow = document.createElement('tr'); caloriesLeftRow.style.fontWeight = 'bold'; caloriesLeftRow.style.background = '#fff3e0'; caloriesLeftRow.innerHTML = `<td colspan="2">Calories Left After Optimized Dishes</td><td style="${leftCarbColor}">${Math.round(leftCarbCalories)}</td><td style="${leftProteinColor}">${Math.round(leftProteinCalories)}</td><td style="${leftFatColor}">${Math.round(leftFatCalories)}</td><td></td><td></td>`; table.appendChild(caloriesLeftRow);
+
+                                        const rows = table.querySelectorAll('tr');
+                                        data.cart.forEach(item => {
+                                            const recommendedQty = optCounts[item.dish_name] || 0;
+                                            rows.forEach(rw => {
+                                                const dishCell = rw.cells && rw.cells[0];
+                                                const recomCell = rw.cells && rw.cells[6];
+                                                if (dishCell && recomCell && dishCell.textContent.trim() === item.dish_name) {
+                                                    const currentQty = Number(item.quantity || 0);
+                                                    // If current quantity greater than recommended -> show '-'
+                                                    if (currentQty > recommendedQty) {
+                                                        recomCell.innerHTML = '<span style="color:orange;font-weight:bold;">-</span>';
+                                                    } else if (currentQty < recommendedQty) {
+                                                        // If current less than recommended -> show '+'
+                                                        recomCell.innerHTML = '<span style="color:blue;font-weight:bold;">+</span>';
+                                                    } else {
+                                                        // equal -> checkmark
+                                                        recomCell.innerHTML = '<span style="color:green;font-weight:bold;">✓</span>';
+                                                    }
+                                                }
+                                            });
+                                        });
+                                    }).catch(() => {});
+                            }).catch(() => {});
+
+                    }).catch(() => { document.getElementById('cartContent').innerHTML = '<div class="empty">Failed to load nutrition.</div>'; });
+
+            }).catch(() => { document.getElementById('cartContent').innerHTML = '<div class="empty">Failed to load cart items.</div>'; });
+
+        });
     </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 # dish_swap_optimizer.py
 import random
 from typing import List, Dict, Tuple
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from lightfm import LightFM
 from lightfm.data import Dataset
 import numpy as np
@@ -11,6 +11,17 @@ from scipy.sparse import save_npz, load_npz
 import joblib
 import pickle
 import mysql.connector
+
+import sys
+import json
+
+user_id = int(sys.argv[1])
+target_carb = float(sys.argv[2])
+target_protein = float(sys.argv[3])
+target_fat = float(sys.argv[4])
+cart_items = json.loads(sys.argv[5])
+liked_items = json.loads(sys.argv[6])
+
 
 # -----------------------------
 # Dish Data (example from user)
@@ -72,6 +83,70 @@ def fetch_dishes_from_mysql(
         if 'conn' in locals() and conn.is_connected():
             conn.close()
 
+def find_dishes_from_mysql(
+    element,
+    host: str = 'localhost',
+    user: str = 'root',
+    password: str = 'xiayingyu',
+    database: str = 'macronutrients_calculator',
+    port: int = 3306
+) -> list:
+    """
+    Fetch dish rows from MySQL. `element` may be either:
+      - a list of dish names (can include duplicates) -> preserves multiplicity in returned list
+      - a comma/quote separated string (legacy) -> will be parsed
+
+    Returns a list of dicts (one per requested occurrence).
+    """
+    try:
+        # Normalize to a list of names
+        if isinstance(element, list):
+            names = element
+        else:
+            # element is expected like: "'A', 'B', 'A'" (legacy). Parse to plain names.
+            parts = [p.strip() for p in element.split(',') if p.strip()]
+            names = [p.strip().strip("\"'\n \r") for p in parts]
+
+        # Connect to MySQL
+        conn = mysql.connector.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=database,
+            port=port
+        )
+        cursor = conn.cursor()
+
+        dishes = []
+        # Query each requested name individually so duplicates are preserved
+        for name in names:
+            if not name:
+                continue
+            try:
+                cursor.execute("SELECT id, name, carbs, proteins, fats FROM dishes WHERE name = %s", (name,))
+                row = cursor.fetchone()
+                if row:
+                    dishes.append({"id": row[0], "name": row[1], "carbs": row[2], "proteins": row[3], "fats": row[4]})
+                else:
+                    # Optionally handle missing dish names; for now skip silently
+                    # print(f"Warning: dish not found: {name}")
+                    pass
+            except mysql.connector.Error as qerr:
+                print(f"Query error for '{name}': {qerr}")
+
+        return dishes
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        return []
+
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals() and conn.is_connected():
+            conn.close()
+
+
 
 # -----------------------------
 # Constants
@@ -83,25 +158,25 @@ MARGIN = 30  # allowable kcal deviation
 # Integrate with LightFm
 # -----------------------------
 # Load dataset
-with open('./savedLightFmData/dataset.pkl', 'rb') as f:
+with open('../savedLightFmData/dataset.pkl', 'rb') as f:
     loaded_dataset = pickle.load(f)
 
 # Load interaction matrix
-loaded_interactions = load_npz('./savedLightFmData/interactions.npz')
+loaded_interactions = load_npz('../savedLightFmData/interactions.npz')
 
 # Load model
-loaded_model = joblib.load('./savedLightFmData/lightfm_model.pkl')
+loaded_model = joblib.load('../savedLightFmData/lightfm_model.pkl')
 
 # Load dishes variable 
-with open('./savedLightFmData/dishes.pkl', 'rb') as f:
+with open('../savedLightFmData/dishes.pkl', 'rb') as f:
     dishes = pickle.load(f)
-    print ("dishes: ", dishes)
+    #print ("dishes: ", dishes)
 
 # Load dishes metadata variable 
-with open ('./savedLightFmData/dishesMetadata.pkl', 'rb') as f: 
+with open ('../savedLightFmData/dishesMetadata.pkl', 'rb') as f: 
     item_features_matrix = pickle.load(f)
 
-print(dishes)
+#print(dishes)
 
 
 # -----------------------------
@@ -140,7 +215,7 @@ def lightfm_model(userId: int) -> Dict[int, float]:
     scores = loaded_model.predict(user_id, dish_ids, item_features=item_features_matrix)
     lightfm_scores = {index: value for index, value in enumerate(scores, start=1)}
 
-    print ("lightfm_scores: ", lightfm_scores)
+    #print ("lightfm_scores: ", lightfm_scores)
     return lightfm_scores
 
 
@@ -162,7 +237,7 @@ def optimize_selection(
     best_action = "original"
     best_match_diffCal, totals, within = evaluate_macros(best_selection, targets)
     best_score = sum(scores[d["id"]] for d in best_selection)
-    print ("original best_score is: ", best_score)
+    #print ("original best_score is: ", best_score)
     tradeoff_scores = [best_score]
     if within: 
         return best_selection, best_action, tradeoff_scores
@@ -278,45 +353,62 @@ def optimize_selection(
 # Example Usage
 # -----------------------------
 if __name__ == "__main__":
+    #print(f"user_id: {user_id}, {target_carb}, {target_protein}, {target_fat}, {cart_items}, {liked_items}")
     # Example target macronutrient calorie goals
+    '''
     target_macros = {
         "carb_cal": 100,   # example target kcal from carbs
         "protein_cal": 200,
         "fat_cal": 300
     }
+    '''
+    target_macros = {
+        "carb_cal": target_carb,   # example target kcal from carbs
+        "protein_cal": target_protein,
+        "fat_cal": target_fat
+    }
     DISHES = fetch_dishes_from_mysql()
-    print ("DISHES from sql: ", DISHES)
+    #print ("DISHES from sql: ", DISHES)
     # Simulate LightFM scores
     #lightfm_scores = random_lightfm_scores(DISHES)
-    userId = 31
+    userId = user_id
     lightfm_scores = lightfm_model(userId)
 
-    # Select 3 starting dishes
-    initial_selection = [DISHES[0], DISHES[1], DISHES[3]]
-
-    print("Initial selection:")
-    for d in initial_selection:
-        print(f"  - {d['name']}")
+    #initial_selection = []
+    # Pass the cart_items list directly so duplicates are preserved
+    # cart_items is expected to be a list of dish name strings (may include duplicates)
+    # Example: ["Golden Egg Fried Rice", "Golden Egg Fried Rice", "Zesty Yuzu Seoul Chick Bowl"]
+    initial_selection = find_dishes_from_mysql(cart_items)
+    #for element in cart_items:
+        #eachDish = "SELECT * FROM dishes WHERE name 'Golden Egg Fried Rice';"
+        
+        
+    #initial_selection = [DISHES[0], DISHES[1], DISHES[3]]
+    #print (f"initial_selection: {initial_selection}")
+    #print("Initial selection:")
+    #for d in initial_selection:
+    #    print(f"  - {d['name']}")
 
     match, totals, within = evaluate_macros(initial_selection, target_macros)
-    print("\nInitial Macro Totals:", totals)
-    print("Match Target:", match)
-    print("Initial within:", within)
+    #print("\nInitial Macro Totals:", totals)
+    #print("Match Target:", match)
+    #print("Initial within:", within)
 
     # Run optimization (swap, remove, or add)
     optimized, action_taken, tradeoffs = optimize_selection(initial_selection, DISHES, target_macros, lightfm_scores, within)
 
-    print("\nOptimized selection:")
+    #print("\nOptimized selection:")
     for d in optimized:
-        print(f"  - {d['name']}")
+        print(f"  {d['name']}")
 
     match, totals, within = evaluate_macros(optimized, target_macros)
-    print("\nOptimized Macro Totals:", totals)
-    print("Match Target:", match)
-    print("Total Preference Score:", sum(lightfm_scores[d['id']] for d in optimized))
-    print("Action Taken:", action_taken)
+    #print("\nOptimized Macro Totals:", totals)
+    #print("Match Target:", match)
+    #print("Total Preference Score:", sum(lightfm_scores[d['id']] for d in optimized))
+    #print("Action Taken:", action_taken)
 
     # Visualization
+    '''
     plt.plot(tradeoffs, marker='o')
     plt.title("Tradeoff: LightFM Score During Optimization")
     plt.xlabel("Iteration")
@@ -324,4 +416,5 @@ if __name__ == "__main__":
     plt.grid(True)
     plt.tight_layout()
     plt.show()
+    '''
 
